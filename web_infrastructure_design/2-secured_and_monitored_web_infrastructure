@@ -1,0 +1,27 @@
+# Secured and Monitored 3-Server Web Infrastructure Design
+
+## Architecture Topology Overview
++-----------------------------------------------------------------+
+|                        CLIENT / BROWSER                         |
++-----------------------------------------------------------------+
+                                 |
+                                 | 1. Secure HTTPS Request (Port 443)
+                                 v
++-----------------------------------------------------------------+
+|                  LOAD BALANCER (HAProxy + SSL)                  |
+|    - Firewall 1 (UFW / iptables)                                |
+|    - SSL Termination (HTTPS -> HTTP)                            |
++-----------------------------------------------------------------+
+             |                                    |
+             | 2a. Internal Routing               | 2b. Internal Routing
+             v                                    v
++-------------------------------+   +-------------------------------+
+|      SERVER 1 (Backend)       |   |      SERVER 2 (Backend)       |
+|    - Firewall 2               |   |    - Firewall 3               |
+|    - Monitoring Agent         |   |    - Monitoring Agent         |
+|    - Nginx Web Server         |   |    - Nginx Web Server         |
+|    - Application Server       |   |    - Application Server       |
+|    - Database (MySQL Master)  |   |    - Database (MySQL Slave)   |
++-------------------------------+   +-------------------------------+
+             ^                                    |
+             |-------- 3. DB Data Sync -----------|
