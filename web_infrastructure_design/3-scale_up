@@ -1,0 +1,36 @@
+# Scaled and Decoupled N-Tier Web Infrastructure Design (Task 3)
+
+## Architecture Topology Overview
++-----------------------------------------------------------------+
+|                        CLIENT / BROWSER                         |
++-----------------------------------------------------------------+
+                                 |
+                                 | 1. Request to Virtual IP (VIP)
+                                 v
++-----------------------------------------------------------------+
+|               LOAD BALANCER CLUSTER (HAProxy 1 & 2)             |
+|          - Configured in High Availability (Active-Passive)     |
++-----------------------------------------------------------------+
+             |                                    |
+             | 2a. Proxy to Web Tier              | 2b. Proxy to Web Tier
+             v                                    v
++-------------------------------+   +-------------------------------+
+|       WEB SERVER 1 (Nginx)    |   |       WEB SERVER 2 (Nginx)    |
+| - Handles static content      |   | - Handles static content      |
+| - SSL Termination & Proxy     |   | - SSL Termination & Proxy     |
++-------------------------------+   +-------------------------------+
+             |                                    |
+             +-----------------+------------------+
+                               | 3. Forwards dynamic requests
+                               v
++-----------------------------------------------------------------+
+|                     APPLICATION SERVER TIER                     |
+|           - App Server 1 & App Server 2 (Executes code)         |
++-----------------------------------------------------------------+
+                               |
+                               | 4. SQL Read / Write Queries
+                               v
++-----------------------------------------------------------------+
+|                        DATABASE TIER                            |
+|             - MySQL Primary (Write) & Replica (Read)            |
++-----------------------------------------------------------------+
