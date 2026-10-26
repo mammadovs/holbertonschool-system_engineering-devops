@@ -1,0 +1,78 @@
+# Single-Server Web Stack Architecture
+
+## Overview Diagram Structure
++-----------------------------------------------------------------+
+|                         CLIENT / BROWSER                        |
++-----------------------------------------------------------------+
+                                 |
+                                 | 1. HTTP/HTTPS Request to www.foobar.com
+                                 v
++-----------------------------------------------------------------+
+|                           DNS SYSTEM                            |
+|             Maps www.foobar.com to IP Address 8.8.8.8           |
++-----------------------------------------------------------------+
+                                 |
+                                 | 2. Connects to server IP via TCP/IP
+                                 v
++-----------------------------------------------------------------+
+|                     HOST SERVER (IP: 8.8.8.8)                   |
+|                                                                 |
+|  +-----------------------------------------------------------+  |
+|  |                       WEB SERVER (Nginx)                  |  |
+|  +-----------------------------------------------------------+  |
+|          | (Static Files)                 | (Dynamic Requests)  |
+|          v                                v                     |
+|  +---------------------+      +------------------------------+  |
+|  |  APPLICATION FILES  |      |      APPLICATION SERVER      |  |
+|  |  (HTML, CSS, JS)    |      |    (Processes Core Logic)    |  |
+|  +---------------------+      +------------------------------+  |
+|                                           |                     |
+|                                           | SQL Queries         |
+|                                           v                     |
+|                              +------------------------------+  |
+|                              |       DATABASE (MySQL)       |  |
+|                              +------------------------------+  |
++-----------------------------------------------------------------+
+
+## User Request Lifecycle
+
+1. **Initiation:** The client enters `www.foobar.com` into their web browser.
+2. **Name Resolution:** The browser contacts a DNS service to resolve the domain name string into the corresponding numerical server address (`8.8.8.8`).
+3. **Network Connection:** A TCP connection is established with target IP `8.8.8.8` over standard web ports (80 for HTTP or 443 for HTTPS).
+4. **Web Proxy Handling:** The Nginx web server intercepts the request packet. It evaluates whether the resource is static (delivering HTML/CSS files directly from the local disk) or dynamic.
+5. **Backend Processing:** If application logic is needed, Nginx forwards the request to the application server layer, which executes the code base and queries the local **MySQL Database** for necessary records.
+6. **Delivery:** The compiled response travels back through the web server to the client browser for visual rendering.
+
+## Technical Definitions & Core Concepts
+
+- **What is a server?** 
+  A hardware machine or software daemon that provides data, compute services, or resources to remote clients over a network infrastructure.
+
+- **What is the role of the domain name?** 
+  It translates complex numerical IP addresses into human-friendly text strings (like `foobar.com`) so users can easily memorize and access web locations.
+
+- **What type of DNS record is `www` in `www.foobar.com`?** 
+  It is typically configured as an **A record** (or alias via CNAME) pointing the subdomain directly to the server's IPv4 address (`8.8.8.8`).
+
+- **What is the role of the web server (Nginx)?** 
+  It acts as the primary public-facing gateway, managing incoming client network sessions, serving static content instantly, and proxying backend application queries.
+
+- **What is the role of the application server?** 
+  It executes the core program code, handles user session states, enforces business rules, and bridges communication between incoming client requests and database storage.
+
+- **What is the role of the database (MySQL)?** 
+  It safely stores, structures, updates, and retrieves application persistent data (such as user accounts, relational records, and configurations).
+
+- **How does the server communicate with the user's computer?** 
+  It relies on the standard **TCP/IP stack**, transmitting payloads via **HTTP** or **HTTPS** protocols.
+
+## Inherent Architecture Limitations
+
+- **Single Point of Failure (SPOF):** 
+  Since Nginx, the application code, and MySQL are all hosted on one single machine (`8.8.8.8`), any hardware failure, kernel panic, or software crash will immediately take the entire platform offline.
+
+- **Maintenance Downtime:** 
+  Routine tasks like deploying code updates, restarting services, or applying operating system patches require service interruptions, resulting in total website downtime for end users.
+
+- **Scalability Bottleneck:** 
+  The setup relies entirely on the processing power and memory limits of one box. If incoming traffic spikes massively, the server will bottleneck and crash, with no ability to distribute load horizontally.
